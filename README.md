@@ -1,16 +1,16 @@
-# ArchBooBlender
+# ArchBooBlender #
 Arch generator scripts coded for Blender.
 
 
 In progress...
 
-##ToDo:
+## ToDo:
 
-###Setupfile:
+### Setupfile:
 
 ~~--Just make relation lines invisible by default.
 
-###Makerfile:
+### Makerfile:
 
 ~~--Change object selection from text entry to object picker
 
@@ -18,13 +18,13 @@ In progress...
 
 ~~--do ALL the maths, and add to arch model as custom properties.~~ moved to mathpart (and mostly done)
 
-###MathsPart
+### MathsPart
 
 -- Roll.  Need to get creative.
 
 -- Assign variables to arch object as custom properties (UI work needed here)
 
-###Overall
+### Overall
 
 --change to a add-on structure
 
