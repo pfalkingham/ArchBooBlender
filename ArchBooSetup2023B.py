@@ -42,6 +42,14 @@ if "heelLocator" in bpy.data.objects:
     bpy.ops.object.delete()
 
 
+#Get rid of dumb relationship lines:
+# Get the 3D view area
+area = next(area for area in bpy.context.screen.areas if area.type == "VIEW_3D")
+# Get the 3D view space data
+space = area.spaces.active
+# Turn off relationship lines
+space.overlay.show_relationship_lines = False
+
 
 ###Now do script
 #create and rename locators
