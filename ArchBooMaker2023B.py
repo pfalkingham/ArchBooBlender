@@ -13,8 +13,12 @@ if not dir in sys.path:
     sys.path.append(dir)
     
 import MathsPart
+import ArchBooSetup2023B
+import exportValues
 import importlib
 importlib.reload(MathsPart)
+importlib.reload(ArchBooSetup2023B)
+importlib.reload(exportValues)
 
 # Define a function that updates the new object name field
 def update_new_object_name(self, context):
@@ -35,19 +39,31 @@ class RunScriptOperator (bpy.types.Operator):
     
     def execute (self, context):
         # Put your script for Prism MAKER here
-
+        ArchBooSetup2023B.setup_prism()
         return {'FINISHED'}
 
-# This class closes the panel !!!MAY WANT TO REMOVE THIS WHEN IT'S AN ADDON
-class OBJECT_OT_ClosePanel (bpy.types.Operator):
-    bl_label = "Close"
-    bl_idname = "object.close_panel"
+# Define an operator class that runs the export script
+class RunExportOperator (bpy.types.Operator):
+    bl_idname = "object.export_values"
+    bl_label = "Export to CSV"
     
     def execute (self, context):
-        # unregister the panel class
-        bpy.utils.unregister_class (OBJECT_PT_MayaScript)
-        
+        # Put your script for export here
+        bpy.ops.export_data.some_data('INVOKE_DEFAULT')
         return {'FINISHED'}
+    
+    
+###!!!MAY WANT TO REMOVE THIS WHEN IT'S AN ADDON
+# This class closes the panel 
+#class OBJECT_OT_ClosePanel (bpy.types.Operator):
+#    bl_label = "Close"
+#    bl_idname = "object.close_panel"
+#    
+#    def execute (self, context):
+#        # unregister the panel class
+#        bpy.utils.unregister_class (OBJECT_PT_MayaScript)
+#        
+#        return {'FINISHED'}
 
 # Define a pointer property for the tray object
 bpy.types.Scene.my_track = bpy.props.PointerProperty(name="track", type=bpy.types.Object, update=update_new_object_name)
@@ -68,11 +84,14 @@ class OBJECT_PT_MayaScript (bpy.types.Panel):
         #Adding the run setup script button
         layout.operator("object.run_script", text = "Setup Prism")
         
+        #some buttons to ease selecting of locators
+        row2 = layout.row ()
+        row2.operator('object.select_mpa', text="mpa").name = "mpLocatorA"
+        row2.operator('object.select_mpa', text="mpb").name = "mpLocatorB"
+        row2.operator('object.select_mpa', text="mph").name = "heelLocator"
+        
         # create an object selector
         layout.prop_search(scene, "my_track", scene, "objects", text="Model")
-        
-        # create an insert button
-#        layout.operator ("object.insert_object_name")
         
         # create a dialogue for foot or track
         layout.prop (scene, "foot_or_track", expand=True)
@@ -87,27 +106,37 @@ class OBJECT_PT_MayaScript (bpy.types.Panel):
         row = layout.row ()
         row.operator ("object.calculate_boolean")
         row.operator ("object.cancel_operation")
-        layout.operator ("object.close_panel")
+        
+        #add the export button
+        layout.operator ("object.export_values", text = "export values")        
+        #layout.operator ("object.close_panel")
 
-# create an operator to insert the selected object name into the new object name field
-class OBJECT_OT_InsertObjectName (bpy.types.Operator):
-    bl_label = "Update Arch Name"
-    bl_idname = "object.insert_object_name"
-    
+#three buttons to select locators (I feel this might be useful?)
+class OBJECT_OT_selectMpa(bpy.types.Operator): 
+    bl_label = "Select locator" 
+    bl_idname = "object.select_mpa"
+
+    name: bpy.props.StringProperty(name="Name", default="") # This is the argument for the operator
+
     def execute (self, context):
-        scene = context.scene
-        
-        # get the selected object name
-        selected_object_name = scene.my_track.name
-        
-        # update the new object name field with the prefix and the selected object name
-        scene.new_object_name = f"arch_{selected_object_name}"
-        
+        # Get the object by name
+        myobject = bpy.data.objects.get(self.name)
+        if myobject:
+            # Deselect all objects
+            bpy.ops.object.select_all(action='DESELECT')
+            # Select the object
+            myobject.select_set(True)
+            # Make it active
+            context.view_layer.objects.active = myobject
+            self.report({'INFO'}, f"Selected {myobject.name}")
+        else:
+            self.report({'WARNING'}, f"No object named {self.name}")
         return {'FINISHED'}
 
 
+
 # create an operator to cancel the operation and reset the fields
-class OBJECT_OT_CancelOperation (bpy.types.Operator):
+class OBJECT_OT_ResetOperation (bpy.types.Operator):
     bl_label = "Reset"
     bl_idname = "object.cancel_operation"
     
@@ -145,14 +174,17 @@ class OBJECT_OT_CalculateBoolean (bpy.types.Operator):
         MathsPart.do_the_hard_part(scene.my_track.name, scene.left_or_right, scene.foot_or_track, scene.new_object_name)
         return {'FINISHED'}
 
+
 # register the classes and properties
 def register ():
+
     bpy.utils.register_class (OBJECT_PT_MayaScript)
-#   bpy.utils.register_class (OBJECT_OT_InsertObjectName)
     bpy.utils.register_class (OBJECT_OT_CalculateBoolean)
-    bpy.utils.register_class (OBJECT_OT_CancelOperation)
-    bpy.utils.register_class (OBJECT_OT_ClosePanel)
-    bpy.utils.register_class(RunScriptOperator)
+    bpy.utils.register_class (OBJECT_OT_ResetOperation)
+    #bpy.utils.register_class (OBJECT_OT_ClosePanel)
+    bpy.utils.register_class (RunScriptOperator)
+    bpy.utils.register_class (RunExportOperator)
+    bpy.utils.register_class (OBJECT_OT_selectMpa)
     
     bpy.types.Scene.selected_object = bpy.props.StringProperty ()
     bpy.types.Scene.foot_or_track = bpy.props.EnumProperty (
@@ -178,11 +210,14 @@ def register ():
 # unregister the classes and properties
 def unregister ():
     bpy.utils.unregister_class (OBJECT_PT_MayaScript)
-    bpy.utils.unregister_class (OBJECT_OT_InsertObjectName)
     bpy.utils.unregister_class (OBJECT_OT_CalculateBoolean)
-    bpy.utils.unregister_class (OBJECT_OT_CancelOperation)
-    bpy.utils.unregister_class (OBJECT_OT_ClosePanel)
-    bpy.utils.unregister_class(RunScriptOperator)
+    bpy.utils.unregister_class (OBJECT_OT_ResetOperation)
+    #bpy.utils.unregister_class (OBJECT_OT_ClosePanel)
+    bpy.utils.unregister_class (RunScriptOperator)
+    bpy.utils.unregister_class (RunExportOperator)
+    bpy.utils.unregister_class (OBJECT_OT_selectMpa)
+
+    
     
     
     del bpy.types.Scene.selected_object
