@@ -7,8 +7,7 @@ In progress... (awaiting addon format)
 
 ## Insallation
 
-Currently, just load all scripts into blender and run ArchBooMaker2023.py.
-I want this as an addon, but I can't figure out how to do that.
+Download the zip, install as an addon, and away you go.
 
 ## Instructions:
 
