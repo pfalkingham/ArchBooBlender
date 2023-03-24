@@ -11,6 +11,7 @@ Download the zip, install as an addon, and away you go.
 
 ## Instructions:
 
+- Click 'create prism' to setup the prism and locators.  You should only do this once, as if you press it again it'll delete any existing prism/locators and regenerate them, so you'll loose any keyframing etc.
 - move mpLocatorA, mpLocatorB, and heelLocator to correct positions.  You can easily select them with the buttons at the top of the UI
 - Ensure prism is upwards (so mpLocatorA will always be to left of B, regardless of side of foot.
 - select the mesh you want to calculate RAV for using the object picker (this will auto-update the archname)
@@ -22,29 +23,10 @@ Download the zip, install as an addon, and away you go.
 ## Known Issues:
 - Tracks need to be non-manifold i.e. surfaces, rather than solids.  Don't know why.
 - If you hit undo (ctrl-Z) after pressing calculate, blender crashes hard and closes.  Don't know why.
+- 'create prism' _will_ delete current prism+associate locators, losing any keyframing.
 
 ## ToDo:
 
-### Setupfile:
-
-~~- Just make relation lines invisible by default.~~
-
-### Makerfile:
-
-~~- Change object selection from text entry to object picker~~
-
-~~- Auto name arch model based on object picked~~
-
-~~- do ALL the maths, and add to arch model as custom properties.~~ moved to mathpart (and mostly done)
-
-### MathsPart
-
-~~- Roll.  Need to get creative.~~
-
-~~- Assign variables to arch object as custom properties (UI work needed here)~~
-
-### Overall
-
-~~- change to a add-on structure
-
-~~- remove the close button when this happens.~~
+- Add an 'are you sure' dialogue to 'create prism' if prism already exists.
+- See if we can put a little 'print' button in the custom properties that would let you copy and paste values for just that one object.
+- Possibly add prism height to the AMB UI, rather than leave it just on the prism's custom properties tab.
