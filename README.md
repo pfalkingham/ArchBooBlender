@@ -21,7 +21,7 @@ Download the zip, install as an addon, and away you go.
 - Values can be seen directly in object properties, or there's an export button that will put all arch's values into a CSV file.
 
 ## Known Issues:
-- Tracks need to be non-manifold i.e. surfaces, rather than solids.  Don't know why.
+- Tracks need to be non-manifold i.e. surfaces, rather than solids.  Don't know why. (feet can be manifold or not)
 - If you hit undo (ctrl-Z) after pressing calculate, blender crashes hard and closes.  Don't know why.
 - 'create prism' _will_ delete current prism+associate locators, losing any keyframing.
 
