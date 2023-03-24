@@ -3,8 +3,6 @@ Arch generator scripts coded for Blender.
 
 Maths adapted from Steve Gatesy's original Maya Mel Scripts.
 
-In progress... (awaiting addon format)
-
 ## Insallation
 
 Download the zip, install as an addon, and away you go.
