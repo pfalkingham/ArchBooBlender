@@ -19,6 +19,7 @@ Download the zip, install as an addon, and away you go.
 - Values can be seen directly in object properties, or there's an export button that will put all arch's values into a CSV file.
 
 ## Known Issues:
+See issues tab for things I'm tracking and intend to fix.  The below are more usage issues that may not have fixes.
 - Tracks need to be non-manifold i.e. surfaces, rather than solids.  Don't know why. (feet can be manifold or not)
 - If you hit undo (ctrl-Z) after pressing calculate, blender crashes hard and closes.  Don't know why.
 - 'create prism' _will_ delete current prism+associate locators, losing any keyframing.
@@ -28,3 +29,6 @@ Download the zip, install as an addon, and away you go.
 - Add an 'are you sure' dialogue to 'create prism' if prism already exists.
 - See if we can put a little 'print' button in the custom properties that would let you copy and paste values for just that one object.
 - Possibly add prism height to the AMB UI, rather than leave it just on the prism's custom properties tab.
+
+## Video tutorial
+https://www.youtube.com/watch?v=X1J_pugLPxk 
