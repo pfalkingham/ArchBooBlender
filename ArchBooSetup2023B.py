@@ -386,3 +386,7 @@ def setup_prism():
     #Would like to toggle visibility of that sub-collection.
     
     return{'FINISHED'}
+
+def register(): pass
+
+def unregister(): pass

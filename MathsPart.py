@@ -3,46 +3,12 @@
 import bpy 
 import math
 import bmesh
+import numpy as np
 from mathutils import Vector
+from mathutils import Euler
 
 def do_the_hard_part (my_track_name, left_or_right, foot_or_track, new_object_name):
     print("Booleaning and calculating variables")
-    
-#First up, select my_track_name, duplicate it, and rename the duplicate:
-
-#oldCODE
-#    # Select the object by name
-#    obj = bpy.context.scene.objects.get (my_track_name)
-#    # Deselect all other objects
-#    bpy.ops.object.select_all (action='DESELECT')
-#    # Make the object active and selected
-#    bpy.context.view_layer.objects.active = obj
-#    obj.select_set (True)
-#    # Duplicate the object in place
-#    bpy.ops.object.duplicate_move ()
-#    # Get the duplicate object
-#    dup = bpy.context.active_object
-#    # Rename the duplicate object
-#    dup.name = new_object_name
-#    
-
-##Next, we want to boolean the prism and the object to create our arch:  #this may need an if statement for foot or track
-#    # Get the prism object by name
-#    prism = bpy.context.scene.objects.get ("prism")
-#    # Add a boolean modifier to the duplicate object
-#    bool = dup.modifiers.new (name="Boolean", type="BOOLEAN")
-#    # Set the modifier operation to difference
-#    bool.operation = "INTERSECT"
-#    # Set the modifier object to prism
-#    bool.object = prism
-#    #turn on self intersection:
-#    bool.use_self = True
-#    # Apply the modifier
-#    bpy.ops.object.modifier_apply ({"object": dup}, modifier=bool.name) #We could comment this out to make things reversible.
-#    #make prism and original object invisible in the viewport:
-#    prism.hide_set(True)
-#    obj.hide_set(True)
-
 
     #Set object and prism:
     obj = bpy.context.scene.objects.get (my_track_name)
@@ -147,20 +113,22 @@ def do_the_hard_part (my_track_name, left_or_right, foot_or_track, new_object_na
 ##RELATIVE MID DEPTH
     rel_depth = track_depth/axis_length
 
-##PITCH
-    axis = mpMid - mph.location
-    pitch = math.degrees(math.asin(axis.z/axis_length))
+##PITCH - now done with roll and orientation object.
+    #axis = mpMid - mph.location
+    #pitch = math.degrees(math.asin(axis.z/axis_length))
 
 ##ROLL # will need an if statement for left or right.
     ori = bpy.context.scene.objects.get("orientationLocator") # get the original object by name
     bpy.ops.object.select_all(action='DESELECT') # deselect all objects
     ori.select_set(True) # select the original object
-    bpy.ops.object.duplicate_move() # duplicate it and move it slightly
+    bpy.ops.object.duplicate_move() # duplicate it and move it zero
     copy = bpy.data.objects["orientationLocator.001"] # get the copy object by name
     if copy: # check if the copy object exists
         bpy.ops.object.visual_transform_apply() # apply its visual transformation
         rot = copy.rotation_euler # get its euler rotation
         roll = math.degrees(rot.x) # get the local X rotation in degrees
+        pitch = math.degrees(rot.y) # get the local Z rotation in degrees (axis flipped, so z = y)
+        orientation = math.degrees(rot.z)+90
         bpy.ops.object.delete() # delete the copy object
     else: # if the copy object does not exist
         print("No copy object found") # print an error message
@@ -204,6 +172,56 @@ def do_the_hard_part (my_track_name, left_or_right, foot_or_track, new_object_na
 ##RELATIVE ARCH VOLUME  (newest RAV is volume divided by area^1.5
     rav = 100*(volume/(pow(base_area, 1.5)))
 
+##POSITION OF HIGHEST VERTEXT RELATIVE TO AXIS, PERPENDICULAR TO BOTTOM FACE
+    
+    #duplicate dup
+    bpy.ops.object.select_all(action='DESELECT')
+    dup.select_set(True)
+    bpy.ops.object.duplicate_move()
+    dup2 = bpy.data.objects[dup.name + ".001"] # get the copy object by name
+    dup2.name = "tempArch"
+
+    #now move it by -mph
+    dup2.location = dup2.location - mph.location
+
+    #set the pivot to (0,0,0)
+    bpy.context.scene.cursor.location = (0,0,0)
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
+    #now rotate dup2 by (roll, pitch, orientation) - note that I'm converting to degrees above, then back to radians here.  Could simplify.
+    dup2.rotation_euler = Euler((-math.radians(pitch), math.radians(roll), -math.radians(orientation)), 'XYZ')
+    #apply those rotations
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+
+    #now find the xyz location of the highest vertex of dup2
+    highest_vertex = dup2.data.vertices[0]
+    for v in dup2.data.vertices:
+        if v.co.z > highest_vertex.co.z:
+            highest_vertex = v
+    
+    #DEBUGGING let's create an empty axis at the location of that vertex
+    #bpy.ops.object.empty_add(type='PLAIN_AXES', location=highest_vertex.co)
+    #empty = bpy.context.active_object
+    #empty.name = "highestVertex"
+
+    maxArchHeight = highest_vertex.co.z
+    highest_vertex_y_percent = highest_vertex.co.y/axis_length*100
+
+    ##Let's also get centre of mass of that object
+    #with dup2 active and selected, set pivot to geometry
+    bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY')
+    #get the location of the pivot
+    cmPos = dup2.location.y
+    #calculate as %
+    cmPosPC = cmPos/axis_length*100
+
+    #now delete dup2
+    bpy.ops.object.delete()
+
+
+
+
+##ASSIGN VARIABLES TO OBJECT AND DISPLAY
 
     #Print out the values to the console - this is useful for debugging or copy-pasting for individual objects.
     print("RAV: ", rav)
@@ -218,6 +236,10 @@ def do_the_hard_part (my_track_name, left_or_right, foot_or_track, new_object_na
     print("mpA depth: ", mpa.location.z)
     print("mpB depth: ", mpb.location.z)
     print("side: ", left_or_right)
+    print("orientation:", orientation)
+    print("max Arch Height: ", maxArchHeight)
+    print("position of highest vertex: ", highest_vertex_y_percent)
+    print("Centre of Mass: ", cmPosPC)
 
     #Assign variables to the object  
     dup["RAV"] = rav
@@ -232,6 +254,11 @@ def do_the_hard_part (my_track_name, left_or_right, foot_or_track, new_object_na
     dup["mpA Depth"] = mpa.location.z
     dup["mpB Depth"] = mpb.location.z
     dup["Side"] = left_or_right
+    dup["Orientation"] = orientation
+    dup["Max Arch Height"] = maxArchHeight
+    dup["Position of Highest Vertex (p/c len)"] = highest_vertex_y_percent
+    dup["CM Position (p/c len)"] = cmPosPC
+
 
     ##MAKE A PANEL ON THE OBJECT TO VIEW THEM
     # Create a custom panel class
@@ -263,7 +290,16 @@ def do_the_hard_part (my_track_name, left_or_right, foot_or_track, new_object_na
                 layout.label(text=f"mpA Depth: {panelobj['mpA Depth']:.3f}")
                 layout.label(text=f"mpB Depth: {panelobj['mpB Depth']:.3f}")
                 layout.label(text=f"Side: {panelobj['Side']:s}")
+                layout.label(text=f"Orientation: {panelobj['Orientation']:.3f}")
+                layout.label(text=f"Max Arch Height: {panelobj['Max Arch Height']:.3f}")
+                layout.label(text=f"Position of Highest Vertex (p/c len): {panelobj['Position of Highest Vertex (p/c len)']:.3f}")
+                layout.label(text=f"CM Position (p/c len): {panelobj['CM Position (p/c len)']:.3f}")
+                
                 
                 
     # Register the panel class
     bpy.utils.register_class(RAVPanel)
+
+def register(): pass
+
+def unregister(): pass

@@ -1,24 +1,10 @@
 import bpy
 import sys
 import os
-
-# get blend file path
-filepath = bpy.data.filepath
-
-# get the directory relative to the blend file path
-dir = os.path.dirname(filepath)
-
-# append your module's path to sys.path
-if not dir in sys.path:
-    sys.path.append(dir)
     
-import MathsPart
-import ArchBooSetup2023B
-import exportValues
-import importlib
-importlib.reload(MathsPart)
-importlib.reload(ArchBooSetup2023B)
-importlib.reload(exportValues)
+from . import MathsPart
+from . import ArchBooSetup2023B
+from . import exportValues
 
 # Define a function that updates the new object name field
 def update_new_object_name(self, context):
@@ -52,19 +38,6 @@ class RunExportOperator (bpy.types.Operator):
         bpy.ops.export_data.some_data('INVOKE_DEFAULT')
         return {'FINISHED'}
     
-    
-###!!!MAY WANT TO REMOVE THIS WHEN IT'S AN ADDON
-# This class closes the panel 
-#class OBJECT_OT_ClosePanel (bpy.types.Operator):
-#    bl_label = "Close"
-#    bl_idname = "object.close_panel"
-#    
-#    def execute (self, context):
-#        # unregister the panel class
-#        bpy.utils.unregister_class (OBJECT_PT_MayaScript)
-#        
-#        return {'FINISHED'}
-
 # Define a pointer property for the tray object
 bpy.types.Scene.my_track = bpy.props.PointerProperty(name="track", type=bpy.types.Object, update=update_new_object_name)
 

@@ -4,13 +4,13 @@ def write_some_data(context, filepath):
     print("running write_some_data...")
     f = open(filepath, 'w', encoding='utf-8')
     # create a list of custom properties
-    props = ["RAV", "RMD", "Pitch", "Roll", "Arch Volume", "Base Area", "Axis Length", "Mid Axis Depth", "Heel Depth", "mpA Depth", "mpB Depth"]
+    props = ["RAV", "RMD", "Pitch", "Roll", "Arch Volume", "Base Area", "Axis Length", "Mid Axis Depth", "Heel Depth", "mpA Depth", "mpB Depth", "Orientation", "Max Arch Height", "Position of Highest Vertex (p/c len)","CM Position (p/c len)"]
     # write the header row
     f.write("Mesh, ")
     f.write(",".join(props) + "\n")
     # loop through the arch_* objects
     for obj in bpy.data.objects:
-        if obj.name.startswith("arch_"):
+        if obj.name.startswith("arch_"):  #I should make this use whatever's in the box in the UI
             #write the object's name:
             f.write(obj.name+", ")
             # create a list of values for each object
